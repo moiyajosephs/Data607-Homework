@@ -52,7 +52,7 @@ The source of the article is included under the References header.
 ## Import file as CSV
 
 ``` r
-avengers_dataset_url <- "https://raw.githubusercontent.com/moiyajosephs/Data-607-Homework-1/main/avengers.csv"
+avengers_dataset_url <- "https://raw.githubusercontent.com/moiyajosephs/Data607-Homework/main/Homework1/avengers.csv"
 avengers <- read_csv(curl(avengers_dataset_url))
 ```
 
