@@ -34,7 +34,7 @@ To be fully vaccinated one has to have at least two COVID shots and have passed 
 
 ## Read from the CSV file into R, and transform the data  
 ```{r}
-vaccination <- read.csv("https://raw.githubusercontent.com/moiyajosephs/Data-607-Homework-5/main/israeli_vaccination_data.csv?token=GHSAT0AAAAAABSDV7RHT2335YTAM3KSBPLGYREB4PA")
+vaccination <- read.csv("https://raw.githubusercontent.com/moiyajosephs/Data607-Homework/main/Homework5/israeli_vaccination_data.csv")
 ```
 
 ```{r}
