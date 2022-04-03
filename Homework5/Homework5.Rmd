@@ -1,0 +1,148 @@
+---
+title: "Homework 5"
+author: "Moiya Josephs"
+date: "3/3/2022"
+output: 
+  html_document:
+    toc: true
+    toc_float: true
+    toc_depth: 4
+  
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+library(tidyverse)
+library(stringr)
+library(kableExtra)
+```
+
+# Overview
+
+We were given a chart that shows August 2021 data for Israeli hospitalization (“Severe Cases”) rates for people both under and over 50, for both un-vaccinated and fully vaccinated populations. 
+
+In order to answer them I needed more information about:
+<ol>
+<li> Israel’s total population: </li> 
+As of 2020 Israel has over 9 million people. 
+<li> Who is eligible to receive vaccinations?</li>
+As of August 2021, people over the age 12 are eligible for the COVID vaccine. 
+According to the Israeli official website for coronovirus updates, they are offering vaccinations for as young as 5 years old, although it does not specify when this started. As of August 2021 according to this article, people over the age of 16 were eligible for the booster.
+<li> What does it mean to be fully vaccinated? </li>
+To be fully vaccinated one has to have at least two COVID shots and have passed three weeks. In Israel they have implemented a policy that any person with a second or third dose over six months ago is no longer considered vaccinated. Past the six months the vaccination is no longer considered valid.
+</ol>
+
+## Read from the CSV file into R, and transform the data  
+```{r}
+vaccination <- read.csv("https://raw.githubusercontent.com/moiyajosephs/Data-607-Homework-5/main/israeli_vaccination_data.csv?token=GHSAT0AAAAAABSDV7RHT2335YTAM3KSBPLGYREB4PA")
+```
+
+```{r}
+names(vaccination)<-(c("age","population_novax","population_vax",
+                       "severe_novax","severe_vax","efficacy_vs_severe"))
+vaccination<-vaccination[-1,]
+```
+
+# Perform analysis 
+
+### Do you have enough information to calculate the total population?  What does this total population represent?	
+
+No we do not have enough information to calculate the total population. According to multiple sources, the actual population of Israel is 9,000,000. The table shows far less than that. This population represents only the people who were eligible to be vaccinated. 
+
+#### Split the tables 
+
+```{r}
+# split the table in three, one for the population one for the percentages and the other for severe cases 
+population <- vaccination %>% slice(seq(1,4,2)) %>% select(2:3)
+rownames(population) <- c("<50",">50")
+head(population) %>% kbl() %>% kable_styling(bootstrap_options = c("striped", "hover"))
+```
+
+```{r}
+severe <- vaccination %>% slice(seq(1,4,2)) %>% select(4:5)
+rownames(severe) <- c("<50",">50")
+
+head(severe) %>% kbl() %>% kable_styling(bootstrap_options = c("striped", "hover"))
+
+```
+
+```{r}
+
+percentage <- vaccination %>% slice(seq(2,4,2)) %>% select(2:3)
+rownames(percentage)<- c("<50",">50")
+head(percentage) %>% kbl() %>% kable_styling(bootstrap_options = c("striped", "hover"))
+
+```
+This table shows more people are vaccinated than unvaccinated.
+
+#### Total Population
+
+```{r}
+library(reshape2)
+#clean the population, remove the , in the chr 
+population$population_novax = gsub(",", "", population$population_novax)
+population$population_vax = gsub(",", "", population$population_vax)
+
+#Change the chr column into a numeric column
+population$population_novax <- as.numeric(population$population_novax)              
+population$population_vax <- as.numeric(population$population_vax)               
+
+# find the total for ages <50 and > 50
+population <- population%>%
+   mutate(sum = rowSums(across(where(is.numeric))))
+
+head(population) %>% kbl() %>% kable_styling(bootstrap_options = c("striped", "hover"))
+
+```
+The population documented in this table does not total to the amount Israel reports. This is because the data only included the population of the eligible people for COVID vaccination.
+
+
+#### Total Severe 
+
+```{r}
+# convert the chr field into numeric
+severe$severe_novax <- as.numeric(severe$severe_novax)                
+severe$severe_vax <- as.numeric(severe$severe_vax)          
+
+# find the total <50 and > 50
+severe <- severe%>%
+   mutate(sum = rowSums(across(where(is.numeric))))
+head(severe) %>% kbl() %>% kable_styling(bootstrap_options = c("striped", "hover"))
+
+```
+This table shows the total amount of sever cases is larger in the over 50 population than the under 50. 
+
+### Calculate the Efficacy vs. Disease; Explain your results.    
+Efficacy refers to how well a vaccine performs under ideal conditions as reflected in a careful clinical trial. For our purposes efficacy is defined in the function below.   
+$$
+Efficacy\ vs.\ severe\ disease = 1- \% fully\ vaxed\ severe\ cases\ per\ 100K/\% not\ vaxed\ severe\ cases\ per\ 100K)
+$$   
+
+#### From your calculation of efficacy vs. disease, are you able to compare the rate of severe cases in unvaccinated individuals to that in vaccinated individuals?	  	
+
+```{r}
+# calculate the sum of fully vaxed
+# calculate the sum of the not vaxed
+# find the percentage
+severe <- severe%>%
+   mutate(efficacy = 1 - (severe_vax/severe_novax))
+head(severe) %>% kbl() %>% kable_styling(bootstrap_options = c("striped", "hover"))
+
+```
+For the ages under 50 the vaccine performed with a `r severe[1,4]` efficacy. The amount of people who were not vaccinated was greater than the amount of people who were vaccinated. An efficacy with a value of `r severe[1,4]` shows that the vaccinated group experienced `r severe[1,4]` fewer cases than if they were not vaccinated.   
+While for people over 50, the efficacy was `r severe[2,4]` meaning this group's vaccinated population did not perform ideally. Unlike the under 50 group, the amount of people who were vaccinated and ended up with a severe case was greater than if they were not vaccinated. Meaning that the vaccinated group in the over 50 population experienced an inverse effect compared to those under the age of 50, and were more likely to end up with a severe case.
+
+
+We cannot compare everyone who was not vaccinated since the data only considers those who were eligible. However it does give us data of people who were at least 12 and vaccinated. According to the data the vaccine is "ineffective".
+
+
+# Conclusions 
+
+This data seems to have damning evidence against the vaccine, at least if you are of a certain age. The data does has inconsistencies throughout. It does not include the entire Israeli population. Not everyone is eligible for the vaccine, for example, children under the age of 12. According to many sources, over 50 group were one of the first groups of people to get vaccinated. This data does not explain if the people who were counted as vaccinated or not received one or more doses.  In order to make a more concrete conclusion, we would also need the survival rates of the severe cases. More data would be needed to make a concrete conclusion on whether or not the vaccine in Israel is effective or not.
+
+# Sources
+
+
+[Israel Offers Covid Booster Shot to All Eligible for Vaccine](https://www.timesofisrael.com/israel-offers-covid-booster-shot-to-all-eligible-for-vaccine/)  
+[Israel Doubles Down on Covid Booster Shots](https://www.cnbc.com/2021/08/30/israel-doubles-down-on-covid-booster-shots-as-breakthrough-cases-rise.html)  
+[Vaccines](https://corona.health.gov.il/en/vaccine-for-covid/) 
