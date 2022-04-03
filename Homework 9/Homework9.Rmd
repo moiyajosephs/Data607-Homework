@@ -1,0 +1,90 @@
+---
+title: "Homework 9"
+author: "Moiya Josephs"
+date: "4/2/2022"
+output: 
+  html_document:
+    toc: true
+    toc_float: true
+    toc_depth: 3
+---
+
+```{r setup, include=FALSE}
+library(httr)
+library(jsonlite)
+library(dplyr)
+```
+
+# Overview
+
+This weeks assignment was to use one of the New York Times web site APIs, as defined here: [NY Times](https://developer.nytimes.com/apis)
+Then choose one of the New York Times APIs, construct an interface in R to read in the JSON data, and transform it into an R DataFrame. 
+
+## API: List Overview
+
+I chose the list overview in the Books API which collects top 5 books for all the Best Sellers lists for specified date. I chose February 15, 2022 best sellers lists.
+
+
+## Reading the raw data
+
+By using the `GET` function I was able to obtain the books list overview raw data. Though it is bad practice to put API Keys, for this to be reproducible, I will include it.
+
+```{r}
+book.overview.raw <- GET("https://api.nytimes.com/svc/books/v3/lists/overview.json?published_date=2022-02-15&api-key=GGPFlFEYArGxQqWlQ1aBFIxc2BXcbw1C")
+```
+
+Next I took a closer look at the content within the raw data and converted it to text.
+
+```{r}
+overview.content <- content(book.overview.raw, as = "text")
+str(overview.content)
+```
+
+
+Now to take the content data from the overview.content and read the json content and output the information.
+
+```{r}
+overview.content.json <- fromJSON(overview.content, flatten = TRUE)
+str(overview.content.json)
+```
+
+# Data Cleaning
+
+Still the data is nested within different list levels. The top selling books are nested within the results lists, list.books. Once I narrowed to results, I take the lists.books, a collection of dataframes and turn it into one object that I will call `books.results`.
+```{r}
+results <- data.frame(overview.content.json$results)
+books.results<- results$lists.books
+```
+
+Books.results has many separate data frames that can be bounded together based on the common rows. After using the `rbind` function and saving it to `books` I know exposed the books data and have it all in one data frame.
+```{r}
+books <- as.data.frame(do.call(rbind, books.results))
+head(books)
+```
+
+# Data Analysis 
+
+Books has 90 observations, and has information about the top authors, the book title, the description for their books and so on. 
+
+## Top 3 authors
+
+Of all the authors, I was interested to see who was the top three.
+
+```{r}
+popular.author <- books %>% count(author) %>% top_n(3, n) %>% arrange(desc(n))
+popular.author
+```
+By filtering for the top three, I see that Colleen Hoover, Bessel van der Kolk and Nita Prose, occur the most times across the different top seller lists. 
+
+## Weeks on list record
+
+```{r}
+books %>% select(title, weeks_on_list) %>% slice_max(books$weeks_on_list)
+```
+As of February of 2022, the *Diary of the Wimpy Kid* has been on the best selling list for 673 weeks. 
+
+# Conclusion
+
+By using the `httr` library and accessing the raw data of the book API, we are able to get the responses. Cleaning the response is as simple as accessing the content and read in the JSON data. The data may be nested however, so accessing the individual data involves indexing based on the column value.
+
+By following these steps I was able to find the most popular authors and the book that achieved the most weeks on the best sellers list.
