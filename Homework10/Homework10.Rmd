@@ -49,6 +49,7 @@ knitr::kable(head(get_sentiments("bing")))
 ### NRC  
 
 The NRC lexicon categorizes words that are binary into categories that are positive, negative, anger, anticipation, disgust, fear, etc.
+
 ```{r}
 #Source: "Text Mining with R: A Tidy Approach" Chapter 2
 
@@ -90,8 +91,6 @@ ggplot(jane_austen_sentiment, aes(index, sentiment, fill = book)) +
 
 ```{r}
 #Source: "Text Mining with R: A Tidy Approach" Chapter 2
-
-
 pride_prejudice <- tidy_books %>% 
   filter(book == "Pride & Prejudice")
 
@@ -167,25 +166,31 @@ bing_word_counts %>%
 
 ## Scrape website 
 
-```{r}
+To find the speech I scraped the PBS website of the transript of Judge Jackson's opening remarks. Then I saved it to value `speech`.
 
+```{r}
 speech_website <- read_html("https://www.pbs.org/newshour/politics/read-the-full-text-of-supreme-court-nominee-ketanji-brown-jacksons-opening-remarks")
 speech <- speech_website %>%
 html_nodes("p") %>%
 html_text()
 ```
 
+
+
 ## Syuzhet
 
-A data frame where each row represents a sentence from the original file. The columns include one for each emotion type as well as a positive or negative valence. The ten columns are as follows: "anger", "anticipation", "disgust", "fear", "joy", "sadness", "surprise", "trust", "negative", "positive."
+Syuzhet is a package with its own lexicon. In the package it defines that its sentiments function returns a data frame where each row represents a sentence from the original file. The different columns are: "anger", "anticipation", "disgust", "fear", "joy", "sadness", "surprise", "trust", "negative", "positive." 
 
+Instead of `get_sentiments` the function is `get_sentiment`. For each sentence it gives a numeric value of the sentiment. Shown in the output below. 
 
 ```{r}
 get_sentiment(speech[3:24])
 ```
 
+With `get_nrc_sentiment` it calculates eight different emotions and the sentiments in the text file. 
+
 ```{r}
-# with syuzhet library
+
 knitr::kable(get_nrc_sentiment(speech[3:24]))
 ```
 
@@ -206,6 +211,8 @@ English sentiment lexicon created for use with financial documents. This lexicon
 knitr::kable(get_sentiments("loughran") %>% count(sentiment, sort = TRUE) )
 ```
 
+The speech is mainly in the body from 3 to 24, so I slice the body of the webpage and save it to `tidy_speech`. Now I need to extract all the words, I strip the empty space and convert it into a data frame. Each row is a single word in the speech.
+
 ```{r}
 tidy_speech <- speech[3:24]
 
@@ -215,11 +222,13 @@ words.df <- data.frame(rowNumber, tidy_speech_words)
 names(words.df) <- c("rowNumber","word")
 ```
 
-
+Just like the textbook example, I inner join the words in the loughran sentiment to the speech.
 ```{r}
 speech_sentiment_loughran <- words.df %>% inner_join(get_sentiments("loughran"))
 ```
 
+
+To count the amount of words per sentiment type I again followed the textbook. Inner join the words from the speech with the lexicon, then count the words by the sentiment and sort it. Next I graphed it using ggplot. 
 ```{r}
 lang_word_counts <- words.df %>%
   inner_join(get_sentiments("loughran")) %>%
@@ -236,8 +245,15 @@ lang_word_counts %>%
   labs(x = "Contribution to sentiment",
        y = NULL)
 ```
+Here you can see uncertainty was the largest sentiment type in the speech followed by positive. Loughran was able to identify some litigious words, which is expected from a speech for a potential Supreme Court judge. 
 
-# Conclusion
+
+# Conclusion  
+
+When using lexicons it is important to note how binary the scoring of the words are and where the source of the text came from. Loughran for example was based on and mainly used for financial documents. The textbook shows how different lexicons can distribute sentiments differently. A possible extention to the new corpus is to compare the sentiment with different lexicons like the textbook did. Context also matters as it can change the meaning of words than just looking at them atomically. 
+
+
+# References
 
 Silge, Julia, and David Robinson. "Text Mining with R: A Tidy Approach". O'Reilly Media, 2017
 
