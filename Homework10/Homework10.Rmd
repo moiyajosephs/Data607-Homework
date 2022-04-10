@@ -1,0 +1,243 @@
+---
+title: "Homework 10"
+author: "Moiya Josephs"
+date: "4/7/2022"
+output: 
+  html_document:
+    toc: true
+    toc_float: true
+    toc_depth: 4
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+library(tidytext)
+library(textdata)
+library(janeaustenr)
+library(dplyr)
+library(stringr)
+library(syuzhet)
+library(ggplot2)
+library(tidyr)
+library(rvest)
+library(knitr)
+```
+
+# Overview
+
+In this assignment, I used the primary example code from chapter 2 working in this R Markdown document. In the chapter the authors used three sentiment lexicons, *Afinn*, *bing*, and *nrc*.
+After we were to work with a different corpus of our choosing, and incorporate at least one additional sentiment lexicon. I chose the new Supreme Court Justice Ketanji Brown Jackson’s opening speech and found the sentiment based on the loughron lexicon.
+
+# Textbook example
+This section goes over a brief part of the example given in the textbook. 
+## Sentiment Lexicons
+
+### Afinn
+
+```{r}
+#Source: "Text Mining with R: A Tidy Approach" Chapter 2
+knitr::kable(head(get_sentiments("afinn")))
+```
+### Bing
+
+Bing categorizes words into positive and negative categories.
+
+```{r}
+#Source: "Text Mining with R: A Tidy Approach" Chapter 2
+knitr::kable(head(get_sentiments("bing")))
+```
+### NRC  
+
+The NRC lexicon categorizes words that are binary into categories that are positive, negative, anger, anticipation, disgust, fear, etc.
+```{r}
+#Source: "Text Mining with R: A Tidy Approach" Chapter 2
+
+knitr::kable(head(get_sentiments("nrc")))
+
+```
+
+In the textbook example, the code found the sentiment on Jane austen boosk. The data when tidy can be inner joined with the specific sentiment lexicons.
+```{r}
+#Source: "Text Mining with R: A Tidy Approach" Chapter 2
+
+tidy_books <- austen_books() %>% group_by(book) %>% mutate(linenumber = row_number(), chapter = cumsum(str_detect(text, regex("^chapter [\\divxlc]", ignore_case = TRUE)))) %>% ungroup() %>% unnest_tokens(word,text)
+
+knitr::kable(head(tidy_books))
+```
+
+Next the textbook used the NRC lexicon to perform sentiment analysis and filter to find the joy words. Below the tidy_books represents the where in the book Emma there is words NRC defines as joy.
+```{r}
+#Source: "Text Mining with R: A Tidy Approach" Chapter 2
+
+nrc_joy <- get_sentiments("nrc") %>% filter(sentiment == "joy")
+tidy_books %>% filter(book == "Emma") %>% inner_join(nrc_joy) %>% count(word, sort=TRUE)
+
+knitr::kable(head(nrc_joy))
+
+```
+
+```{r}
+#Source: "Text Mining with R: A Tidy Approach" Chapter 2
+
+
+jane_austen_sentiment <- tidy_books %>% inner_join(get_sentiments("bing")) %>% count(book, index = linenumber %/% 80, sentiment) %>% pivot_wider(names_from = sentiment, values_from = n, values_fill = 0) %>% mutate(sentiment = positive - negative)
+
+ggplot(jane_austen_sentiment, aes(index, sentiment, fill = book)) +
+  geom_col(show.legend = FALSE) +
+  facet_wrap(~book, ncol = 2, scales = "free_x")
+```
+## Comparing the three sentiment dictionaries
+
+```{r}
+#Source: "Text Mining with R: A Tidy Approach" Chapter 2
+
+
+pride_prejudice <- tidy_books %>% 
+  filter(book == "Pride & Prejudice")
+
+knitr::kable(head(pride_prejudice))
+
+```
+```{r}
+#Source: "Text Mining with R: A Tidy Approach" Chapter 2
+
+afinn <- pride_prejudice %>% 
+  inner_join(get_sentiments("afinn")) %>% 
+  group_by(index = linenumber %/% 80) %>% 
+  summarise(sentiment = sum(value)) %>% 
+  mutate(method = "AFINN")
+
+bing_and_nrc <- bind_rows(
+  pride_prejudice %>% 
+    inner_join(get_sentiments("bing")) %>%
+    mutate(method = "Bing et al."),
+  pride_prejudice %>% 
+    inner_join(get_sentiments("nrc") %>% 
+                 filter(sentiment %in% c("positive", 
+                                         "negative"))
+    ) %>%
+    mutate(method = "NRC")) %>%
+  count(method, index = linenumber %/% 80, sentiment) %>%
+  pivot_wider(names_from = sentiment,
+              values_from = n,
+              values_fill = 0) %>% 
+  mutate(sentiment = positive - negative)
+
+bind_rows(afinn, 
+          bing_and_nrc) %>%
+  ggplot(aes(index, sentiment, fill = method)) +
+  geom_col(show.legend = FALSE) +
+  facet_wrap(~method, ncol = 1, scales = "free_y")
+```
+
+
+```{r}
+#Source: "Text Mining with R: A Tidy Approach" Chapter 2
+knitr::kable(get_sentiments("bing") %>% 
+  count(sentiment))
+```
+
+## Most common positive and negative words
+```{r}
+# Source: "Text Mining with R: A Tidy Approach" Chapter 2
+bing_word_counts <- tidy_books %>%
+  inner_join(get_sentiments("bing")) %>%
+  count(word, sentiment, sort = TRUE) %>%
+  ungroup()
+
+knitr::kable(head(bing_word_counts))
+```
+```{r}
+# Source: "Text Mining with R: A Tidy Approach" Chapter 2
+bing_word_counts %>%
+  group_by(sentiment) %>%
+  slice_max(n, n = 10) %>% 
+  ungroup() %>%
+  mutate(word = reorder(word, n)) %>%
+  ggplot(aes(n, word, fill = sentiment)) +
+  geom_col(show.legend = FALSE) +
+  facet_wrap(~sentiment, scales = "free_y") +
+  labs(x = "Contribution to sentiment",
+       y = NULL)
+```
+<hr>
+
+# Sentiment on a new Corpus
+
+
+## Scrape website 
+
+```{r}
+
+speech_website <- read_html("https://www.pbs.org/newshour/politics/read-the-full-text-of-supreme-court-nominee-ketanji-brown-jacksons-opening-remarks")
+speech <- speech_website %>%
+html_nodes("p") %>%
+html_text()
+```
+
+## Syuzhet
+
+A data frame where each row represents a sentence from the original file. The columns include one for each emotion type as well as a positive or negative valence. The ten columns are as follows: "anger", "anticipation", "disgust", "fear", "joy", "sadness", "surprise", "trust", "negative", "positive."
+
+
+```{r}
+get_sentiment(speech[3:24])
+```
+
+```{r}
+# with syuzhet library
+knitr::kable(get_nrc_sentiment(speech[3:24]))
+```
+
+
+```{r}
+s_v <- get_sentences(speech[3:24])
+s_v_sentiment <- get_sentiment(s_v)
+s_v_sentiment
+```
+
+
+## Loughran 
+
+English sentiment lexicon created for use with financial documents. This lexicon labels words with six possible sentiments important in financial contexts: "negative", "positive", "litigious", "uncertainty", "constraining", or "superfluous".
+
+
+```{r}
+knitr::kable(get_sentiments("loughran") %>% count(sentiment, sort = TRUE) )
+```
+
+```{r}
+tidy_speech <- speech[3:24]
+
+tidy_speech_words <- unlist(as.list(strsplit(tidy_speech, " ")))
+rowNumber <- seq(1:length(tidy_speech_words))
+words.df <- data.frame(rowNumber, tidy_speech_words)
+names(words.df) <- c("rowNumber","word")
+```
+
+
+```{r}
+speech_sentiment_loughran <- words.df %>% inner_join(get_sentiments("loughran"))
+```
+
+```{r}
+lang_word_counts <- words.df %>%
+  inner_join(get_sentiments("loughran")) %>%
+  count(word, sentiment, sort = TRUE) %>%
+  ungroup()
+lang_word_counts %>%
+  group_by(sentiment) %>%
+  slice_max(n, n = 10) %>% 
+  ungroup() %>%
+  mutate(word = reorder(word, n)) %>%
+  ggplot(aes(n, word, fill = sentiment)) +
+  geom_col(show.legend = FALSE) +
+  facet_wrap(~sentiment, scales = "free_y") +
+  labs(x = "Contribution to sentiment",
+       y = NULL)
+```
+
+# Conclusion
+
+Silge, Julia, and David Robinson. "Text Mining with R: A Tidy Approach". O'Reilly Media, 2017
+
