@@ -1,0 +1,107 @@
+---
+title: "Homework 12"
+author: "Moiya Josephs"
+date: "3/17/2022"
+output: 
+  html_document:
+    number_sections: true
+    toc: true
+    toc_float: true
+    toc_depth: 4
+    
+---
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+
+<img src="https://assets.brand.microsites.netflix.io/assets/7dc497e2-4975-11ec-a9ce-066b49664af6_cm_1440w.jpg?v=1" style="margin-left=25%">
+
+<hr>
+
+# Recommendation Systems
+
+Netflix is a Fortune 500 company that has millions of users. It also is home to a successful algorithm the *Netflix Recommendation Engine* or NRE. The NRE filters content based on each individual user. It can filter its thousands of titles and uses recommendation clusters based on their users preferences. In an article written by Rachel Meltzer, ["How Netflix Utilized Data Science"][1], it explains that 80% of their users rely on the recommendations engine.
+
+<hr>
+
+# Scenario Design
+For this assignment we were tasked to consider whether it makes sense for the selected recommended system to perform scenario design twice, once for the organization and once for the organization's customers. For the purpose of Netflix, scenario questions may be helpful on both sides.
+
+## Netflix customers 
+As stated in the article 80% of users rely on the recommendation system to chose their next option. 
+
+### Who are your target users?  
+Netflix subscribers are the target users.
+
+### What are their key goals?  
+To keep finding more content that interests them.
+
+### How can you help them accomplish these goals?  
+To keep users engaged with their content and to continue to use the service use a recommendation system that can choose.
+
+
+## Netflix Persepctive
+The recommendation system benefits Netflix as well. According to the article, 47% of North Americans prefer to use Netflix and it has a 93% retention rate. The NRE also saves them $1 billion a year. By using the data provided from the NRE, they predict that newer shows being developed that are similar to what users already indicated that they liked will appeal to them as well. According to ["How Netflix used big data and analytics to generate billions"][2] by Michael Dixon, Netflix will invest in shows based on data from their user base.
+
+### Who are your target users?  
+Netflix subscribers are the target users, but Netflix as a business benefits from it as well.
+
+### What are their key goals?  
+To keep finding more content that interests their customers so they keep paying for the services. It also saves money so the organization knows which shows to invest in for future production. 
+
+### How can you help them accomplish these goals?  
+To keep users engaged with their content and to continue to use the service, the organization would use a recommendation algorithm that is highly accurate in determining what their users are engaged in.
+
+<hr>
+
+# Reverse Engineer
+Netflix recommendation algorithm relys on a variety of factors.
+
+## Customer feedback
+They have a like or dislike system where users can let Netflix know what they are interested in. Then the algorithm will search for other content that is similar in genre. They will take this data and give a percentage for how likely it is a user will enjoy the show. 
+
+<img src="https://www.techhive.com/wp-content/uploads/2022/04/Netflix-two-thumbs-up.jpeg?quality=50&strip=all" width=75% style="margin-left:15%;">
+
+
+## Play information
+Netflix gathers data on how their users watch the show. For example, Netflix collects data if their users complete the show, have to rewind frequently, etc. Based on the activity they judge the interest of the viewer. Whether or not they pick up a show they stopped for example, the algorithm will determine it is not a show of interest for that particular viewer. 
+
+
+<img src="https://www.alphr.com/wp-content/uploads/2021/06/Screenshot_22-10.png" width=75% style="margin-left:13%; ">
+
+
+## Searched shows
+Netflix collects the search for each user and aggregates it to see which is the most popular. It will base there recommendations on the show title, genre actor genre. The most popular shows will show on default like in the image below. In addition, the shows that the user may also be interested in.
+
+<img src="https://www.tivo.com/content/dam/tivo/images/how-to/netflix/Netflix_Search_0.jpg" width=75% style="margin-left:15%;" >
+
+## Recommended For You 
+Like TikTok, Netflix has a compiled lists where the results of their recommendation lie. It is one of the first thing a user sees so it engages them. My guess since they also track browsing and scrolling activity, they check how much a user interacts with the for you section. The more a user clicks on a show and likes it, the better they can tune their algorithm for that given user.
+
+<img src="https://i.insider.com/57e2b71a077dcc3d018b73d8?width=600&format=jpeg&auto=webp" width=75% style="margin-left:15%;" >
+
+<hr>
+
+# Recommendations  
+
+Right now if a user searches for a title and its not in the catalog, Netflix informs the user that they do not have it, like the image below.
+
+<img src="https://i0.wp.com/pletaura.com/wp-content/uploads/2021/03/2ds-2.png" width=75% style="margin-left:15%;" >
+
+
+Netflix could potentially implement a way for current users to select their current favorites, even if it is not in their catalog. Netflix potentially could use this information for any users so they have a basis for their algorithm, and recommend off of the results.
+
+<hr>
+
+# Recources:
+
+[How Netflix Used Big Data and Analytics to Generate Billions](https://seleritysas.com/blog/2019/04/05/how-netflix-used-big-data-and-analytics-to-generate-billions/#:%7E:text=Netflix%20collects%20several%20data%20points,detailed%20profile%20on%20its%20subscribers.&text=To%20collect%20all%20this%20data,movies%20based%20on%20user's%20preferences.)
+
+[How Netflix Uses Data to Optimize Their Product](https://www.lighthouselabs.ca/en/blog/how-netflix-uses-data-to-optimize-their-product#:~:text=The%20Netflix%20Recommendation%20Engine,clusters%20based%20on%20user%20preferences.)
+
+
+[1]: https://www.lighthouselabs.ca/en/blog/how-netflix-uses-data-to-optimize-their-product#:~:text=The%20Netflix%20Recommendation%20Engine,clusters%20based%20on%20user%20preferences.
+
+[2]: https://seleritysas.com/blog/2019/04/05/how-netflix-used-big-data-and-analytics-to-generate-billions/#:%7E:text=Netflix%20collects%20several%20data%20points,detailed%20profile%20on%20its%20subscribers.&text=To%20collect%20all%20this%20data,movies%20based%20on%20user's%20preferences.
+
