@@ -83,7 +83,7 @@ Like TikTok, Netflix has a compiled lists where the results of their recommendat
 
 <hr>
 
-# Recommendations  
+# Recommendations  and Conclusions
 
 Right now if a user searches for a title and its not in the catalog, Netflix informs the user that they do not have it, like the image below.
 
@@ -91,6 +91,8 @@ Right now if a user searches for a title and its not in the catalog, Netflix inf
 
 
 Netflix could potentially implement a way for current users to select their current favorites, even if it is not in their catalog. Netflix potentially could use this information for any users so they have a basis for their algorithm, and recommend off of the results.
+
+Netflix is already the leading streaming service and a great example of using your data to both improve user experience and revenue. As they continue to grow and understand their users likes and dislike, they can use this information to cultivate new content and keep their already large user base. Netflix is a model that other organizations might want to follow.
 
 <hr>
 
